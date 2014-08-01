@@ -19,12 +19,9 @@
  */
 package weka.gui.visualize.plugins;
 
-import java.util.ArrayList;
+import java.io.Serializable;
 
-import javax.swing.JMenuItem;
-
-import weka.classifiers.evaluation.Prediction;
-import weka.core.Attribute;
+import javax.swing.JPanel;
 
 /**
  * Ancestor for confusion matrix visualizations.
@@ -32,50 +29,17 @@ import weka.core.Attribute;
  * @author  fracpete (fracpete at waikato dot ac dot nz)
  * @version $Revision$
  */
-public abstract class AbstractConfusionMatrixVisualization
-  implements VisualizePlugin {
+public abstract class AbstractConfusionMatrixVisualization 
+  implements Serializable {
+
+  /** for serialization. */
+  private static final long serialVersionUID = 8547782264818608668L;
 
   /**
-   * Get a JMenu or JMenuItem which contain action listeners that perform the
-   * visualization, using some but not necessarily all of the data. Exceptions
-   * thrown because of changes in Weka since compilation need to be caught by
-   * the implementer.
+   * Generates the visualization.
    * 
-   * @see NoClassDefFoundError
-   * @see IncompatibleClassChangeError
-   * 
-   * @param preds predictions
-   * @param classAtt class attribute
-   * @return menuitem for opening visualization(s), or null to indicate no
-   *         visualization is applicable for the input
+   * @param matrix	the matrix to visualize
+   * @return		the panel with the visualization
    */
-  public JMenuItem getVisualizeMenuItem(ArrayList<Prediction> preds, Attribute classAtt) {
-    // TODO
-    return null;
-  }
-
-  /**
-   * Get the minimum version of Weka, inclusive, the class is designed to work
-   * with. eg: <code>3.5.0</code>
-   */
-  public String getMinVersion() {
-    return "3.7.9";
-  }
-
-  /**
-   * Get the maximum version of Weka, exclusive, the class is designed to work
-   * with. eg: <code>3.6.0</code>
-   */
-  public String getMaxVersion() {
-    return "3.8.0";
-  }
-
-  /**
-   * Get the specific version of Weka the class is designed for. eg:
-   * <code>3.5.1</code>
-   */
-  public String getDesignVersion() {
-    return "3.7.11";
-  }
-
+  public abstract JPanel generate(ConfusionMatrix matrix);
 }
