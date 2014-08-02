@@ -193,4 +193,42 @@ public class ConfusionMatrix
     
     return result;
   }
+  
+  /**
+   * Returns the maximum count in the matrix.
+   * 
+   * @return		the count
+   */
+  public double getMax() {
+    double	result;
+    int		i;
+    int		n;
+    
+    result = 0;
+    for (i = 0; i < getNumClasses(); i++) {
+      for (n = 0; n < getNumClasses(); n++)
+	result = Math.max(result, m_Matrix[i][n]);
+    }
+    
+    return result;
+  }
+  
+  /**
+   * Returns the minimum count in the matrix.
+   * 
+   * @return		the count
+   */
+  public double getMin() {
+    double	result;
+    int		i;
+    int		n;
+    
+    result = 0;
+    for (i = 0; i < getNumClasses(); i++) {
+      for (n = 0; n < getNumClasses(); n++)
+	result = Math.min(result, m_Matrix[i][n]);
+    }
+    
+    return result;
+  }
 }
