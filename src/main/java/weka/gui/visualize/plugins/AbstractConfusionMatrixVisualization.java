@@ -19,9 +19,17 @@
  */
 package weka.gui.visualize.plugins;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.Serializable;
 
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 /**
  * Ancestor for confusion matrix visualizations.
@@ -35,6 +43,67 @@ public abstract class AbstractConfusionMatrixVisualization
   /** for serialization. */
   private static final long serialVersionUID = 8547782264818608668L;
 
+  /**
+   * Generates a {@link JScrollPane} with proper scroll settings.
+   * 
+   * @param view	the component to add to the pane
+   * @return		the scroll pane
+   */
+  protected JScrollPane createScrollPane(Component view) {
+    JScrollPane		result;
+    
+    result = new JScrollPane(view);
+    result.getVerticalScrollBar().setUnitIncrement(20);
+    result.getHorizontalScrollBar().setUnitIncrement(20);
+    result.getVerticalScrollBar().setBlockIncrement(100);
+    result.getHorizontalScrollBar().setBlockIncrement(100);
+    result.setWheelScrollingEnabled(true);
+    
+    return result;
+  }
+  
+  /**
+   * Returns the "save as" menu item.
+   * 
+   * @param frame	the frame
+   * @return		the generate menu item, null if not available
+   */
+  protected abstract JMenuItem getSaveAsMenuItem(final JFrame frame);
+  
+  /**
+   * Generates the menubar for the frame.
+   * 
+   * @param frame	the frame
+   * @return		the generate menu
+   */
+  public JMenuBar getMenuBar(final JFrame frame) {
+    JMenuBar 	menubar;
+    JMenu 	menu;
+    JMenuItem 	menuitem;
+    
+    menubar = new JMenuBar();
+    menu    = new JMenu("File");
+    menubar.add(menu);
+    
+    menuitem = getSaveAsMenuItem(frame);
+    if (menuitem != null) {
+      menu.add(menuitem);
+      menu.addSeparator();
+    }
+
+    menuitem = new JMenuItem("Close");
+    menuitem.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+	frame.setVisible(false);
+	frame.dispose();
+      }
+    });
+    menu.add(menuitem);
+    
+    return menubar;
+  }
+  
   /**
    * Generates the visualization.
    * 

@@ -20,15 +20,13 @@
 package weka.gui.visualize.plugins;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 
 import weka.classifiers.evaluation.Prediction;
 import weka.core.Attribute;
@@ -50,12 +48,18 @@ public abstract class AbstractConfusionMatrixVisualizationPlugin
   protected abstract String getMenuItemText();
   
   /**
-   * Returns the visualization.
+   * Returns the visualization to use.
    * 
-   * @param matrix	the matrix to use for the visualization
    * @return		the visualization
    */
-  protected abstract JPanel getVisualization(ConfusionMatrix matrix);
+  protected abstract AbstractConfusionMatrixVisualization getVisualization();
+  
+  /**
+   * Returns the initial size of the frame.
+   * 
+   * @return		the dimensions
+   */
+  protected abstract Dimension getFrameDimension();
   
   /**
    * Get a JMenu or JMenuItem which contain action listeners that perform the
@@ -71,40 +75,27 @@ public abstract class AbstractConfusionMatrixVisualizationPlugin
    * @return menuitem for opening visualization(s), or null to indicate no
    *         visualization is applicable for the input
    */
-  public JMenuItem getVisualizeMenuItem(ArrayList<Prediction> preds, Attribute classAtt) {
-    JMenuItem			result;
-    final ConfusionMatrix	matrix;
+  public JMenuItem getVisualizeMenuItem(final ArrayList<Prediction> preds, final Attribute classAtt) {
+    JMenuItem	result;
     
     if (!classAtt.isNominal()) {
       System.err.println("Class is not nominal: " + classAtt.name());
       return null;
     }
     
-    matrix = new ConfusionMatrix(preds, classAtt);
     result = new JMenuItem(getMenuItemText());
     result.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-	JPanel panel = getVisualization(matrix);
-	final JFrame jf = new JFrame(getMenuItemText());
+	ConfusionMatrix matrix = new ConfusionMatrix(preds, classAtt);
+	AbstractConfusionMatrixVisualization visualization = getVisualization();
+	final JFrame jf = new JFrame(classAtt.name() + " - " + getMenuItemText());
 	jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-	jf.setSize(800, 600);
+	jf.setSize(getFrameDimension());
 	jf.getContentPane().setLayout(new BorderLayout());
-	jf.getContentPane().add(panel, BorderLayout.CENTER);
+	jf.getContentPane().add(visualization.generate(matrix), BorderLayout.CENTER);
 	jf.setLocationRelativeTo(null);
-	JMenuBar menubar = new JMenuBar();
-	JMenu menu = new JMenu("File");
-	menubar.add(menu);
-	JMenuItem menuitem = new JMenuItem("Close");
-	menuitem.addActionListener(new ActionListener() {
-	  @Override
-	  public void actionPerformed(ActionEvent e) {
-	    jf.setVisible(false);
-	    jf.dispose();
-	  }
-	});
-	menu.add(menuitem);
-	jf.setJMenuBar(menubar);
+	jf.setJMenuBar(visualization.getMenuBar(jf));
 	jf.setVisible(true);
       }
     });
@@ -135,5 +126,4 @@ public abstract class AbstractConfusionMatrixVisualizationPlugin
   public String getDesignVersion() {
     return "3.7.11";
   }
-
 }

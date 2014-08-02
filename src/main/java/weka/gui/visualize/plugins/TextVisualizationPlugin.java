@@ -19,7 +19,8 @@
  */
 package weka.gui.visualize.plugins;
 
-import javax.swing.JPanel;
+import java.awt.Dimension;
+
 
 /**
  * Text visualization plugin.
@@ -40,6 +41,16 @@ public class TextVisualizationPlugin
   protected String getMenuItemText() {
     return "Confusion matrix (text)";
   }
+  
+  /**
+   * Returns the initial size of the frame.
+   * 
+   * @return		the dimensions
+   */
+  @Override
+  protected Dimension getFrameDimension() {
+    return new Dimension(600, 400);
+  }
 
   /**
    * Returns the visualization.
@@ -48,7 +59,7 @@ public class TextVisualizationPlugin
    * @return		the visualization
    */
   @Override
-  protected JPanel getVisualization(ConfusionMatrix matrix) {
-    return new TextVisualization().generate(matrix);
+  protected TextVisualization getVisualization() {
+    return new TextVisualization();
   }
 }

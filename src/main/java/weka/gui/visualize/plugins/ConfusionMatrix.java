@@ -24,6 +24,7 @@ import java.util.List;
 
 import weka.classifiers.evaluation.Prediction;
 import weka.core.Attribute;
+import weka.core.Utils;
 
 /**
  * Represents a confusion matrix.
@@ -44,7 +45,7 @@ public class ConfusionMatrix
   protected Attribute m_ClassAttribute;
   
   /** the matrix. */
-  protected int[][] m_Matrix;
+  protected double[][] m_Matrix;
   
   /** the labels. */
   protected String[] m_Labels;
@@ -74,9 +75,18 @@ public class ConfusionMatrix
       m_Labels[i] = m_ClassAttribute.value(i);
     
     // matrix
-    m_Matrix = new int[m_ClassAttribute.numValues()][m_ClassAttribute.numValues()];
+    m_Matrix = new double[m_ClassAttribute.numValues()][m_ClassAttribute.numValues()];
     for (Prediction pred: m_Predictions)
       m_Matrix[(int) pred.actual()][(int) pred.predicted()] += pred.weight();
+  }
+  
+  /**
+   * Returns the class attribute.
+   * 
+   * @return		the attribute
+   */
+  public Attribute getClassAttribute() {
+    return m_ClassAttribute;
   }
   
   /**
@@ -84,8 +94,17 @@ public class ConfusionMatrix
    * 
    * @return		the matrix
    */
-  public int[][] getMatrix() {
+  public double[][] getMatrix() {
     return m_Matrix;
+  }
+  
+  /**
+   * Returns the number of classes.
+   * 
+   * @return		the number of classes
+   */
+  public int getNumClasses() {
+    return m_ClassAttribute.numValues();
   }
   
   /**
@@ -95,5 +114,83 @@ public class ConfusionMatrix
    */
   public String[] getLabels() {
     return m_Labels;
+  }
+  
+  /**
+   * Returns the total count for the specified class label.
+   * 
+   * @param index	the 0-based class label
+   * @return		the count
+   */
+  public double getTotal(int index) {
+    return Utils.sum(m_Matrix[index]);
+  }
+  
+  /**
+   * Returns the total count for all class labels.
+   * 
+   * @return		the count
+   */
+  public double getTotal() {
+    double	result;
+    int		i;
+    
+    result = 0;
+    for (i = 0; i < getNumClasses(); i++)
+      result += getTotal(i);
+    
+    return result;
+  }
+  
+  /**
+   * Returns the correct count for the specified class label.
+   * 
+   * @param index	the 0-based class label
+   * @return		the count
+   */
+  public double getCorrect(int index) {
+    return m_Matrix[index][index];
+  }
+  
+  /**
+   * Returns the correct count for all class labels.
+   * 
+   * @return		the count
+   */
+  public double getCorrect() {
+    double	result;
+    int		i;
+    
+    result = 0;
+    for (i = 0; i < getNumClasses(); i++)
+      result += getCorrect(i);
+    
+    return result;
+  }
+
+  /**
+   * Returns the incorrect (= misclassified) count for the specified class label.
+   * 
+   * @param index	the 0-based class label
+   * @return		the count
+   */
+  public double getIncorrect(int index) {
+    return getTotal(index) - getCorrect(index);
+  }
+  
+  /**
+   * Returns the incorrect count for all class labels.
+   * 
+   * @return		the count
+   */
+  public double getIncorrect() {
+    double	result;
+    int		i;
+    
+    result = 0;
+    for (i = 0; i < getNumClasses(); i++)
+      result += getIncorrect(i);
+    
+    return result;
   }
 }
