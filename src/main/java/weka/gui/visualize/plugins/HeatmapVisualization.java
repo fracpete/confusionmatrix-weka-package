@@ -20,6 +20,7 @@
 package weka.gui.visualize.plugins;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -42,14 +43,34 @@ public class HeatmapVisualization
   private static final long serialVersionUID = 6739403493248911860L;
 
   /** the size of a single cell. */
-  public final static int CELL_SIZE = 4;
+  public final static int CELL_SIZE = 10;
 
   /** the number of colors. */
   public final static int NUM_COLORS = 256;
   
   /** the generated panel. */
   protected HeatmapPanel m_Heatmap;
+
+  /**
+   * Returns the text for the menu item.
+   * 
+   * @return		the text
+   */
+  @Override
+  public String getMenuItemText() {
+    return "Heatmap";
+  }
   
+  /**
+   * Returns the initial size of the frame.
+   * 
+   * @return		the dimensions
+   */
+  @Override
+  protected Dimension getFrameDimension() {
+    return new Dimension(600, 400);
+  }
+
   /**
    * Returns the "save as" menu item.
    * 

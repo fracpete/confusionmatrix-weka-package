@@ -19,10 +19,13 @@
  */
 package weka.gui.visualize.plugins;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -30,6 +33,9 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+
+import weka.classifiers.evaluation.Prediction;
+import weka.core.Attribute;
 
 /**
  * Ancestor for confusion matrix visualizations.
@@ -42,6 +48,20 @@ public abstract class AbstractConfusionMatrixVisualization
 
   /** for serialization. */
   private static final long serialVersionUID = 8547782264818608668L;
+
+  /**
+   * Returns the text for the menu item.
+   * 
+   * @return		the text
+   */
+  public abstract String getMenuItemText();
+  
+  /**
+   * Returns the initial size of the frame.
+   * 
+   * @return		the dimensions
+   */
+  protected abstract Dimension getFrameDimension();
 
   /**
    * Generates a {@link JScrollPane} with proper scroll settings.
@@ -111,4 +131,45 @@ public abstract class AbstractConfusionMatrixVisualization
    * @return		the panel with the visualization
    */
   public abstract JPanel generate(ConfusionMatrix matrix);
+  
+  /**
+   * Get a JMenu or JMenuItem which contain action listeners that perform the
+   * visualization, using some but not necessarily all of the data. Exceptions
+   * thrown because of changes in Weka since compilation need to be caught by
+   * the implementer.
+   * 
+   * @see NoClassDefFoundError
+   * @see IncompatibleClassChangeError
+   * 
+   * @param preds predictions
+   * @param classAtt class attribute
+   * @return menuitem for opening visualization(s), or null to indicate no
+   *         visualization is applicable for the input
+   */
+  public JMenuItem getVisualizeMenuItem(final ArrayList<Prediction> preds, final Attribute classAtt) {
+    JMenuItem	result;
+    
+    if (!classAtt.isNominal()) {
+      System.err.println("Class is not nominal: " + classAtt.name());
+      return null;
+    }
+    
+    result = new JMenuItem(getMenuItemText());
+    result.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+	ConfusionMatrix matrix = new ConfusionMatrix(preds, classAtt);
+	final JFrame jf = new JFrame(classAtt.name() + " - " + getMenuItemText());
+	jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+	jf.setSize(getFrameDimension());
+	jf.getContentPane().setLayout(new BorderLayout());
+	jf.getContentPane().add(generate(matrix), BorderLayout.CENTER);
+	jf.setLocationRelativeTo(null);
+	jf.setJMenuBar(getMenuBar(jf));
+	jf.setVisible(true);
+      }
+    });
+    
+    return result;
+  }
 }

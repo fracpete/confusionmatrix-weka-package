@@ -14,52 +14,29 @@
  */
 
 /**
- * AbstractConfusionMatrixVisualizationPlugin.java
+ * ConfusionMatrixVisualizationPlugin.java
  * Copyright (C) 2014 University of Waikato, Hamilton, New Zealand
  */
 package weka.gui.visualize.plugins;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Vector;
 
-import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import weka.classifiers.evaluation.Prediction;
 import weka.core.Attribute;
+import weka.core.ClassDiscovery;
 
 /**
- * Ancestor for confusion matrix visualizations.
+ * Menu for confusion matrix visualizations.
  * 
  * @author  fracpete (fracpete at waikato dot ac dot nz)
  * @version $Revision$
  */
-public abstract class AbstractConfusionMatrixVisualizationPlugin
+public class ConfusionMatrixVisualizationPlugin
   implements VisualizePlugin {
-
-  /**
-   * Returns the text for the menu item.
-   * 
-   * @return		the text
-   */
-  protected abstract String getMenuItemText();
-  
-  /**
-   * Returns the visualization to use.
-   * 
-   * @return		the visualization
-   */
-  protected abstract AbstractConfusionMatrixVisualization getVisualization();
-  
-  /**
-   * Returns the initial size of the frame.
-   * 
-   * @return		the dimensions
-   */
-  protected abstract Dimension getFrameDimension();
   
   /**
    * Get a JMenu or JMenuItem which contain action listeners that perform the
@@ -76,29 +53,29 @@ public abstract class AbstractConfusionMatrixVisualizationPlugin
    *         visualization is applicable for the input
    */
   public JMenuItem getVisualizeMenuItem(final ArrayList<Prediction> preds, final Attribute classAtt) {
-    JMenuItem	result;
+    JMenu					result;
+    Vector<String>				plugins;
+    AbstractConfusionMatrixVisualization	visualization;
     
     if (!classAtt.isNominal()) {
       System.err.println("Class is not nominal: " + classAtt.name());
       return null;
     }
     
-    result = new JMenuItem(getMenuItemText());
-    result.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-	ConfusionMatrix matrix = new ConfusionMatrix(preds, classAtt);
-	AbstractConfusionMatrixVisualization visualization = getVisualization();
-	final JFrame jf = new JFrame(classAtt.name() + " - " + getMenuItemText());
-	jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-	jf.setSize(getFrameDimension());
-	jf.getContentPane().setLayout(new BorderLayout());
-	jf.getContentPane().add(visualization.generate(matrix), BorderLayout.CENTER);
-	jf.setLocationRelativeTo(null);
-	jf.setJMenuBar(visualization.getMenuBar(jf));
-	jf.setVisible(true);
+    result  = null;
+    plugins = ClassDiscovery.find(AbstractConfusionMatrixVisualization.class, getClass().getPackage().getName());
+    for (String plugin: plugins) {
+      try {
+	visualization = (AbstractConfusionMatrixVisualization) Class.forName(plugin).newInstance();
+	if (result == null)
+	  result = new JMenu("Confusion matrix");
+	result.add(visualization.getVisualizeMenuItem(preds, classAtt));
       }
-    });
+      catch (Exception e) {
+	System.err.println("Failed to process confusion matrix plugin: " + plugin);
+	e.printStackTrace();
+      }
+    }
     
     return result;
   }

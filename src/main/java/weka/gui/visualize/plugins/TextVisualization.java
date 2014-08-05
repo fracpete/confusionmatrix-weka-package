@@ -20,6 +20,7 @@
 package weka.gui.visualize.plugins;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,7 +55,27 @@ public class TextVisualization
 
   /** the file chooser for saving the content. */
   protected JFileChooser m_FileChooser;
+
+  /**
+   * Returns the text for the menu item.
+   * 
+   * @return		the text
+   */
+  @Override
+  public String getMenuItemText() {
+    return "Text";
+  }
   
+  /**
+   * Returns the initial size of the frame.
+   * 
+   * @return		the dimensions
+   */
+  @Override
+  protected Dimension getFrameDimension() {
+    return new Dimension(600, 400);
+  }
+
   /**
    * Returns the file chooser to use, creates one if necessary.
    * 
