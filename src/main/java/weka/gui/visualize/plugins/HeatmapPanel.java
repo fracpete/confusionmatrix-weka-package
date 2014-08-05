@@ -21,10 +21,13 @@ package weka.gui.visualize.plugins;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
+
+import javax.swing.JPanel;
 
 import weka.gui.visualize.PrintablePanel;
 
@@ -35,7 +38,7 @@ import weka.gui.visualize.PrintablePanel;
  * @version $Revision$
  */
 public class HeatmapPanel 
-  extends PrintablePanel {
+  extends JPanel {
   
   /** for serialization. */
   private static final long serialVersionUID = 4727155732097501101L;
@@ -46,11 +49,71 @@ public class HeatmapPanel
   /** the number of colors. */
   public final static int NUM_COLORS = 256;
 
+  /**
+   * Displays the generated image.
+   * 
+   * @author  fracpete (fracpete at waikato dot ac dot nz)
+   * @version $Revision$
+   */
+  public static class ImagePanel
+    extends PrintablePanel {
+
+    /** for serialization. */
+    private static final long serialVersionUID = 298100449790701747L;
+    
+    /** the image to display. */
+    protected BufferedImage m_Image = null;
+
+    /**
+     * Sets the image to display.
+     * 
+     * @param value	the image
+     */
+    public void setImage(BufferedImage value) {
+      m_Image = value;
+      if (m_Image == null) {
+        setSize(new Dimension(600, 400));
+        setMinimumSize(new Dimension(600, 400));
+        setPreferredSize(new Dimension(600, 400));
+      }
+      else {
+        setSize(new Dimension(m_Image.getWidth(), m_Image.getHeight()));
+        setMinimumSize(new Dimension(m_Image.getWidth(), m_Image.getHeight()));
+        setPreferredSize(new Dimension(m_Image.getWidth(), m_Image.getHeight()));
+      }
+      repaint();
+    }
+    
+    /**
+     * Returns the current image.
+     * 
+     * @return		the image, null if not available
+     */
+    public BufferedImage getImage() {
+      return m_Image;
+    }
+   
+    /**
+     * Paints the component.
+     * 
+     * @param g		the graphics context
+     */
+    @Override
+    protected void paintComponent(Graphics g) {
+      super.paintComponent(g);
+      
+      // clear
+      g.setColor(Color.WHITE);
+      g.fillRect(0, 0, getWidth(), getHeight());
+      
+      // paint image
+      if (m_Image != null)
+        g.drawImage(m_Image, 0, 0, null);
+    }
+  }
+  
   /** the underlying matrix. */
   protected ConfusionMatrix m_Matrix;
-
-  /** the image to display. */
-  protected BufferedImage m_Image;
   
   /** the size of the squares. */
   protected int m_SizeSquares = CELL_SIZE;
@@ -64,6 +127,9 @@ public class HeatmapPanel
   /** the second color. */
   protected Color m_ColorSecond = Color.BLACK;
   
+  /** the panel for displaying the image. */
+  protected ImagePanel m_PanelImage;
+  
   /**
    * Initializes the panel.
    * 
@@ -71,6 +137,9 @@ public class HeatmapPanel
    */
   public HeatmapPanel(ConfusionMatrix matrix) {
     m_Matrix = matrix;
+    m_PanelImage = new ImagePanel();
+    setLayout(new FlowLayout(FlowLayout.CENTER));
+    add(m_PanelImage);
     setImage(generateImage());
     addMouseMotionListener(new MouseMotionAdapter() {
       @Override
@@ -262,18 +331,7 @@ public class HeatmapPanel
    * @param value	the image
    */
   public void setImage(BufferedImage value) {
-    m_Image = value;
-    if (m_Image == null) {
-      setSize(new Dimension(600, 400));
-      setMinimumSize(new Dimension(600, 400));
-      setPreferredSize(new Dimension(600, 400));
-    }
-    else {
-      setSize(new Dimension(m_Image.getWidth(), m_Image.getHeight()));
-      setMinimumSize(new Dimension(m_Image.getWidth(), m_Image.getHeight()));
-      setPreferredSize(new Dimension(m_Image.getWidth(), m_Image.getHeight()));
-    }
-    repaint();
+    m_PanelImage.setImage(value);
   }
   
   /**
@@ -282,7 +340,7 @@ public class HeatmapPanel
    * @return		the image, null if not available
    */
   public BufferedImage getImage() {
-    return m_Image;
+    return m_PanelImage.getImage();
   }
 
   /**
@@ -291,22 +349,11 @@ public class HeatmapPanel
   protected void update() {
     setImage(generateImage());
   }
- 
+  
   /**
-   * Paints the component.
-   * 
-   * @param g		the graphics context
+   * Saves the component.
    */
-  @Override
-  protected void paintComponent(Graphics g) {
-    super.paintComponent(g);
-    
-    // clear
-    g.setColor(Color.WHITE);
-    g.fillRect(0, 0, getWidth(), getHeight());
-    
-    // paint image
-    if (m_Image != null)
-      g.drawImage(m_Image, 0, 0, null);
+  protected void saveComponent() {
+    m_PanelImage.saveComponent();
   }
 }
