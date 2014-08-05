@@ -23,11 +23,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
@@ -51,12 +49,6 @@ public class HeatmapVisualization
 
   /** for serialization. */
   private static final long serialVersionUID = 6739403493248911860L;
-
-  /** the size of a single cell. */
-  public final static int CELL_SIZE = 10;
-
-  /** the number of colors. */
-  public final static int NUM_COLORS = 256;
   
   /** the generated panel. */
   protected HeatmapPanel m_Heatmap;
@@ -67,26 +59,14 @@ public class HeatmapVisualization
   /** the button for selecting the first color. */
   protected JButton m_ButtonFirst;
   
-  /** the first color. */
-  protected Color m_ColorFirst = Color.BLACK;
-  
   /** the button for selecting the second color. */
   protected JButton m_ButtonSecond;
-  
-  /** the second color. */
-  protected Color m_ColorSecond = Color.WHITE;
   
   /** the spinner for the size of the squares. */
   protected JSpinner m_SpinnerSize;
   
-  /** the size of the squares. */
-  protected int m_Size = CELL_SIZE;
-  
   /** the spinner for the number of colors. */
   protected JSpinner m_SpinnerNumColors;
-  
-  /** the number of colors. */
-  protected int m_NumColors = NUM_COLORS;
   
   /** the underlying matrix. */
   protected ConfusionMatrix m_Matrix;
@@ -144,95 +124,6 @@ public class HeatmapVisualization
   protected JMenuItem getPrintMenuItem(final JFrame frame) {
     return null;
   }
-
-  /**
-   * Updates the image using the current parameters.
-   */
-  protected void update() {
-    m_Heatmap.setImage(generateImage());
-  }
-
-  /**
-   * Performs the actual generation.
-   *
-   * @param first	the first color
-   * @param second	the second color
-   * @param num		the number of colors to generate
-   * @return		the generated colors
-   */
-  protected Color[] generateColors(Color first, Color second, int num) {
-    Color[]	result;
-    int		red1;
-    int		red2;
-    int		redNew;
-    int		green1;
-    int		green2;
-    int		greenNew;
-    int		blue1;
-    int		blue2;
-    int		blueNew;
-    int		i;
-    double	step;
-
-    result = new Color[num];
-    red1   = first.getRed();
-    green1 = first.getGreen();
-    blue1  = first.getBlue();
-
-    red2   = second.getRed();
-    green2 = second.getGreen();
-    blue2  = second.getBlue();
-
-    step   = 1.0 / num;
-
-    for (i = 0; i < num; i++) {
-      redNew   = (int) (red1   + ((red2   < red1)   ? -i : i) * step * Math.abs(red2   - red1));
-      greenNew = (int) (green1 + ((green2 < green1) ? -i : i) * step * Math.abs(green2 - green1));
-      blueNew  = (int) (blue1  + ((blue2  < blue1)  ? -i : i) * step * Math.abs(blue2  - blue1));
-
-      result[i] = new Color(redNew, greenNew, blueNew);
-    }
-
-    return result;
-  }
-
-  /**
-   * Generates the heatmap image.
-   * 
-   * @return		the image
-   */
-  protected BufferedImage generateImage() {
-    BufferedImage	image;
-    int			i;
-    int			n;
-    double		min;
-    double		max;
-    double		binWidth;
-    Color[]		colors;
-    int			bin;
-    Graphics		g;
-    
-    // create heatmap image
-    image    = new BufferedImage(m_Matrix.getNumClasses() * m_Size, m_Matrix.getNumClasses() * m_Size, BufferedImage.TYPE_INT_ARGB);
-    g        = image.createGraphics();
-    min      = m_Matrix.getMin();
-    max      = m_Matrix.getMax();
-    binWidth = (max - min) / m_NumColors;
-    colors   = generateColors(m_ColorFirst, m_ColorSecond, m_NumColors);
-    for (i = 0; i < m_Matrix.getNumClasses(); i++) {
-      for (n = 0; n < m_Matrix.getNumClasses(); n++) {
-	bin = (int) Math.floor((m_Matrix.getMatrix()[i][n] - min) / binWidth);
-	// max belongs in the top-most bin
-	if (bin == m_NumColors)
-	  bin--;
-	g.setColor(colors[bin]);
-	g.fillRect(n * m_Size, i * m_Size, m_Size, m_Size);
-      }
-    }
-    g.dispose();
-    
-    return image;
-  }
   
   /**
    * Generates the heatmap panel.
@@ -240,7 +131,7 @@ public class HeatmapVisualization
    * @return		the panel
    */
   protected HeatmapPanel generateHeatmap() {
-    m_Heatmap = new HeatmapPanel(generateImage());
+    m_Heatmap = new HeatmapPanel(m_Matrix);
     return m_Heatmap;
   }
 
@@ -265,10 +156,9 @@ public class HeatmapVisualization
     m_ButtonFirst.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-	Color chosen = JColorChooser.showDialog(m_ButtonFirst, "Select first color", m_ColorFirst);
+	Color chosen = JColorChooser.showDialog(m_ButtonFirst, "Select first color", m_Heatmap.getFirstColor());
 	if (chosen != null)
-	  m_ColorFirst = chosen;
-	update();
+	  m_Heatmap.setFirstColor(chosen);
       }
     });
     option.add(m_ButtonFirst);
@@ -280,10 +170,9 @@ public class HeatmapVisualization
     m_ButtonSecond.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-	Color chosen = JColorChooser.showDialog(m_ButtonSecond, "Select second color", m_ColorSecond);
+	Color chosen = JColorChooser.showDialog(m_ButtonSecond, "Select second color", m_Heatmap.getSecondColor());
 	if (chosen != null)
-	  m_ColorSecond = chosen;
-	update();
+	  m_Heatmap.setSecondColor(chosen);
       }
     });
     option.add(m_ButtonSecond);
@@ -295,12 +184,11 @@ public class HeatmapVisualization
     m_SpinnerSize.setPreferredSize(new Dimension(50, 20));
     ((SpinnerNumberModel) m_SpinnerSize.getModel()).setMinimum(1);
     ((SpinnerNumberModel) m_SpinnerSize.getModel()).setMaximum(1000);
-    ((SpinnerNumberModel) m_SpinnerSize.getModel()).setValue(CELL_SIZE);
+    ((SpinnerNumberModel) m_SpinnerSize.getModel()).setValue(m_Heatmap.getSizeSquares());
     m_SpinnerSize.addChangeListener(new ChangeListener() {
       @Override
       public void stateChanged(ChangeEvent e) {
-	m_Size = (Integer) ((SpinnerNumberModel) m_SpinnerSize.getModel()).getValue();
-	update();
+	m_Heatmap.setSizeSquares((Integer) ((SpinnerNumberModel) m_SpinnerSize.getModel()).getValue());
       }
     });
     label = new JLabel("Size of squares");
@@ -314,12 +202,11 @@ public class HeatmapVisualization
     m_SpinnerNumColors.setPreferredSize(new Dimension(50, 20));
     ((SpinnerNumberModel) m_SpinnerNumColors.getModel()).setMinimum(1);
     ((SpinnerNumberModel) m_SpinnerNumColors.getModel()).setMaximum(256);
-    ((SpinnerNumberModel) m_SpinnerNumColors.getModel()).setValue(NUM_COLORS);
+    ((SpinnerNumberModel) m_SpinnerNumColors.getModel()).setValue(m_Heatmap.getNumColors());
     m_SpinnerNumColors.addChangeListener(new ChangeListener() {
       @Override
       public void stateChanged(ChangeEvent e) {
-	m_NumColors = (Integer) ((SpinnerNumberModel) m_SpinnerNumColors.getModel()).getValue();
-	update();
+	m_Heatmap.setNumColors((Integer) ((SpinnerNumberModel) m_SpinnerNumColors.getModel()).getValue());
       }
     });
     label = new JLabel("# of colors");
