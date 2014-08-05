@@ -93,6 +93,17 @@ public class HeatmapVisualization
 
     return result;
   }
+  
+  /**
+   * Returns the "print" menu item.
+   * 
+   * @param frame	the frame
+   * @return		the generate menu item, null if not available
+   */
+  @Override
+  protected JMenuItem getPrintMenuItem(final JFrame frame) {
+    return null;
+  }
 
   /**
    * Performs the actual generation.

@@ -156,6 +156,33 @@ public class TextVisualization
     
     return result;
   }
+  
+  /**
+   * Returns the "print" menu item.
+   * 
+   * @param frame	the frame
+   * @return		the generate menu item, null if not available
+   */
+  @Override
+  protected JMenuItem getPrintMenuItem(final JFrame frame) {
+    JMenuItem	result;
+    
+    result = new JMenuItem("Print...");
+    result.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+	try {
+	  m_TextArea.print();
+	}
+	catch (Exception ex) {
+	  JOptionPane.showMessageDialog(m_TextArea, "Failed to print!\n" + ex);
+	  ex.printStackTrace();
+	}
+      }
+    });
+    
+    return result;
+  }
 
   /**
    * Method for generating indices for the confusion matrix.

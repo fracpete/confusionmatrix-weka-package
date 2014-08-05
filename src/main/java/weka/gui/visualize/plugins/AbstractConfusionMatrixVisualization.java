@@ -91,6 +91,14 @@ public abstract class AbstractConfusionMatrixVisualization
   protected abstract JMenuItem getSaveAsMenuItem(final JFrame frame);
   
   /**
+   * Returns the "print" menu item.
+   * 
+   * @param frame	the frame
+   * @return		the generate menu item, null if not available
+   */
+  protected abstract JMenuItem getPrintMenuItem(final JFrame frame);
+  
+  /**
    * Generates the menubar for the frame.
    * 
    * @param frame	the frame
@@ -99,27 +107,34 @@ public abstract class AbstractConfusionMatrixVisualization
   public JMenuBar getMenuBar(final JFrame frame) {
     JMenuBar 	menubar;
     JMenu 	menu;
-    JMenuItem 	menuitem;
+    JMenuItem 	saveas;
+    JMenuItem 	print;
+    JMenuItem 	close;
     
     menubar = new JMenuBar();
     menu    = new JMenu("File");
     menubar.add(menu);
     
-    menuitem = getSaveAsMenuItem(frame);
-    if (menuitem != null) {
-      menu.add(menuitem);
-      menu.addSeparator();
-    }
+    saveas = getSaveAsMenuItem(frame);
+    if (saveas != null)
+      menu.add(saveas);
 
-    menuitem = new JMenuItem("Close");
-    menuitem.addActionListener(new ActionListener() {
+    print = getPrintMenuItem(frame);
+    if (print != null)
+      menu.add(print);
+
+    if ((saveas != null) || (print != null))
+      menu.addSeparator();
+    
+    close = new JMenuItem("Close");
+    close.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
 	frame.setVisible(false);
 	frame.dispose();
       }
     });
-    menu.add(menuitem);
+    menu.add(close);
     
     return menubar;
   }
