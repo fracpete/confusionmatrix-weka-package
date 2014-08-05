@@ -41,7 +41,7 @@ public class HeatmapPanel
   private static final long serialVersionUID = 4727155732097501101L;
 
   /** the size of a single cell. */
-  public final static int CELL_SIZE = 10;
+  public final static int CELL_SIZE = 25;
 
   /** the number of colors. */
   public final static int NUM_COLORS = 256;
@@ -53,16 +53,16 @@ public class HeatmapPanel
   protected BufferedImage m_Image;
   
   /** the size of the squares. */
-  protected int m_Size = CELL_SIZE;
+  protected int m_SizeSquares = CELL_SIZE;
   
   /** the number of colors. */
   protected int m_NumColors = NUM_COLORS;
   
   /** the first color. */
-  protected Color m_ColorFirst = Color.BLACK;
+  protected Color m_ColorFirst = Color.WHITE;
   
   /** the second color. */
-  protected Color m_ColorSecond = Color.WHITE;
+  protected Color m_ColorSecond = Color.BLACK;
   
   /**
    * Initializes the panel.
@@ -75,7 +75,15 @@ public class HeatmapPanel
     addMouseMotionListener(new MouseMotionAdapter() {
       @Override
       public void mouseMoved(MouseEvent e) {
-        super.mouseMoved(e);
+	int x = e.getX() / m_SizeSquares;
+	int y = e.getY() / m_SizeSquares;
+	String tiptext = null;
+	if ((x < m_Matrix.getNumClasses()) && (y < m_Matrix.getNumClasses())) {
+	  tiptext = "act: " + m_Matrix.getLabels()[y] 
+	      + ", pred: " + m_Matrix.getLabels()[x] 
+		  + ", count: " + m_Matrix.getMatrix()[y][x];
+	}
+	setToolTipText(tiptext);
       }
     });
   }
@@ -125,7 +133,7 @@ public class HeatmapPanel
    */
   public void setSizeSquares(int value) {
     if ((value >= 1) && (value <= 1000)) {
-      m_Size = value;
+      m_SizeSquares = value;
       update();
     }
     else {
@@ -139,7 +147,7 @@ public class HeatmapPanel
    * @return		the size of the squares
    */
   public int getSizeSquares() {
-    return m_Size;
+    return m_SizeSquares;
   }
 
   /**
@@ -227,7 +235,7 @@ public class HeatmapPanel
     Graphics		g;
     
     // create heatmap image
-    image    = new BufferedImage(m_Matrix.getNumClasses() * m_Size, m_Matrix.getNumClasses() * m_Size, BufferedImage.TYPE_INT_ARGB);
+    image    = new BufferedImage(m_Matrix.getNumClasses() * m_SizeSquares, m_Matrix.getNumClasses() * m_SizeSquares, BufferedImage.TYPE_INT_ARGB);
     g        = image.createGraphics();
     min      = m_Matrix.getMin();
     max      = m_Matrix.getMax();
@@ -240,7 +248,7 @@ public class HeatmapPanel
 	if (bin == m_NumColors)
 	  bin--;
 	g.setColor(colors[bin]);
-	g.fillRect(n * m_Size, i * m_Size, m_Size, m_Size);
+	g.fillRect(n * m_SizeSquares, i * m_SizeSquares, m_SizeSquares, m_SizeSquares);
       }
     }
     g.dispose();
