@@ -19,16 +19,26 @@
  */
 package weka.gui.visualize.plugins;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
+import javax.swing.JButton;
+import javax.swing.JColorChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Visualizes the confusion matrix as heatmap.
@@ -51,6 +61,36 @@ public class HeatmapVisualization
   /** the generated panel. */
   protected HeatmapPanel m_Heatmap;
 
+  /** the panel with the options. */
+  protected JPanel m_PanelOptions;
+  
+  /** the button for selecting the first color. */
+  protected JButton m_ButtonFirst;
+  
+  /** the first color. */
+  protected Color m_ColorFirst = Color.BLACK;
+  
+  /** the button for selecting the second color. */
+  protected JButton m_ButtonSecond;
+  
+  /** the second color. */
+  protected Color m_ColorSecond = Color.WHITE;
+  
+  /** the spinner for the size of the squares. */
+  protected JSpinner m_SpinnerSize;
+  
+  /** the size of the squares. */
+  protected int m_Size = CELL_SIZE;
+  
+  /** the spinner for the number of colors. */
+  protected JSpinner m_SpinnerNumColors;
+  
+  /** the number of colors. */
+  protected int m_NumColors = NUM_COLORS;
+  
+  /** the underlying matrix. */
+  protected ConfusionMatrix m_Matrix;
+  
   /**
    * Returns the text for the menu item.
    * 
@@ -68,7 +108,7 @@ public class HeatmapVisualization
    */
   @Override
   protected Dimension getFrameDimension() {
-    return new Dimension(600, 400);
+    return new Dimension(800, 400);
   }
 
   /**
@@ -103,6 +143,13 @@ public class HeatmapVisualization
   @Override
   protected JMenuItem getPrintMenuItem(final JFrame frame) {
     return null;
+  }
+
+  /**
+   * Updates the image using the current parameters.
+   */
+  protected void update() {
+    m_Heatmap.setImage(generateImage());
   }
 
   /**
@@ -150,16 +197,14 @@ public class HeatmapVisualization
   }
 
   /**
-   * Generates the visualization.
+   * Generates the heatmap image.
    * 
-   * @param matrix	the matrix to visualize
-   * @return		the panel with the visualization
+   * @return		the image
    */
-  @Override
-  public JPanel generate(ConfusionMatrix matrix) {
+  protected BufferedImage generateImage() {
     BufferedImage	image;
     int			i;
-    int			n;	
+    int			n;
     double		min;
     double		max;
     double		binWidth;
@@ -168,27 +213,138 @@ public class HeatmapVisualization
     Graphics		g;
     
     // create heatmap image
-    image    = new BufferedImage(matrix.getNumClasses() * CELL_SIZE, matrix.getNumClasses() * CELL_SIZE, BufferedImage.TYPE_INT_ARGB);
+    image    = new BufferedImage(m_Matrix.getNumClasses() * m_Size, m_Matrix.getNumClasses() * m_Size, BufferedImage.TYPE_INT_ARGB);
     g        = image.createGraphics();
-    min      = matrix.getMin();
-    max      = matrix.getMax();
-    binWidth = (max - min) / NUM_COLORS;
-    colors   = generateColors(Color.BLACK, Color.WHITE, NUM_COLORS);
-    for (i = 0; i < matrix.getNumClasses(); i++) {
-      for (n = 0; n < matrix.getNumClasses(); n++) {
-	bin = (int) Math.floor((matrix.getMatrix()[i][n] - min) / binWidth);
+    min      = m_Matrix.getMin();
+    max      = m_Matrix.getMax();
+    binWidth = (max - min) / m_NumColors;
+    colors   = generateColors(m_ColorFirst, m_ColorSecond, m_NumColors);
+    for (i = 0; i < m_Matrix.getNumClasses(); i++) {
+      for (n = 0; n < m_Matrix.getNumClasses(); n++) {
+	bin = (int) Math.floor((m_Matrix.getMatrix()[i][n] - min) / binWidth);
 	// max belongs in the top-most bin
-	if (bin == NUM_COLORS)
+	if (bin == m_NumColors)
 	  bin--;
 	g.setColor(colors[bin]);
-	g.fillRect(n * CELL_SIZE, i * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+	g.fillRect(n * m_Size, i * m_Size, m_Size, m_Size);
       }
     }
     g.dispose();
-
-    // create panel
-    m_Heatmap = new HeatmapPanel(image);
     
+    return image;
+  }
+  
+  /**
+   * Generates the heatmap panel.
+   * 
+   * @return		the panel
+   */
+  protected HeatmapPanel generateHeatmap() {
+    m_Heatmap = new HeatmapPanel(generateImage());
     return m_Heatmap;
+  }
+
+  /**
+   * Generats the options panel.
+   * 
+   * @return		the panel
+   */
+  protected JPanel generateOptions() {
+    JPanel	result;
+    JPanel	options;
+    JPanel	option;
+    JLabel	label;
+    
+    result = new JPanel(new BorderLayout());
+    options = new JPanel(new GridLayout(4, 1));
+    result.add(options, BorderLayout.NORTH);
+    
+    // first color
+    option = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    m_ButtonFirst = new JButton("First color");
+    m_ButtonFirst.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+	Color chosen = JColorChooser.showDialog(m_ButtonFirst, "Select first color", m_ColorFirst);
+	if (chosen != null)
+	  m_ColorFirst = chosen;
+	update();
+      }
+    });
+    option.add(m_ButtonFirst);
+    options.add(option);
+    
+    // second color
+    option = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    m_ButtonSecond = new JButton("Second color");
+    m_ButtonSecond.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+	Color chosen = JColorChooser.showDialog(m_ButtonSecond, "Select second color", m_ColorSecond);
+	if (chosen != null)
+	  m_ColorSecond = chosen;
+	update();
+      }
+    });
+    option.add(m_ButtonSecond);
+    options.add(option);
+    
+    // size
+    option = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    m_SpinnerSize = new JSpinner();
+    m_SpinnerSize.setPreferredSize(new Dimension(50, 20));
+    ((SpinnerNumberModel) m_SpinnerSize.getModel()).setMinimum(1);
+    ((SpinnerNumberModel) m_SpinnerSize.getModel()).setMaximum(1000);
+    ((SpinnerNumberModel) m_SpinnerSize.getModel()).setValue(CELL_SIZE);
+    m_SpinnerSize.addChangeListener(new ChangeListener() {
+      @Override
+      public void stateChanged(ChangeEvent e) {
+	m_Size = (Integer) ((SpinnerNumberModel) m_SpinnerSize.getModel()).getValue();
+	update();
+      }
+    });
+    label = new JLabel("Size of squares");
+    label.setLabelFor(m_SpinnerSize);
+    option.add(m_SpinnerSize);
+    options.add(option);
+    
+    // number of colors
+    option = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    m_SpinnerNumColors = new JSpinner();
+    m_SpinnerNumColors.setPreferredSize(new Dimension(50, 20));
+    ((SpinnerNumberModel) m_SpinnerNumColors.getModel()).setMinimum(1);
+    ((SpinnerNumberModel) m_SpinnerNumColors.getModel()).setMaximum(256);
+    ((SpinnerNumberModel) m_SpinnerNumColors.getModel()).setValue(NUM_COLORS);
+    m_SpinnerNumColors.addChangeListener(new ChangeListener() {
+      @Override
+      public void stateChanged(ChangeEvent e) {
+	m_NumColors = (Integer) ((SpinnerNumberModel) m_SpinnerNumColors.getModel()).getValue();
+	update();
+      }
+    });
+    label = new JLabel("# of colors");
+    label.setLabelFor(m_SpinnerNumColors);
+    option.add(m_SpinnerNumColors);
+    options.add(option);
+    
+    return result;
+  }
+  
+  /**
+   * Generates the visualization.
+   * 
+   * @param matrix	the matrix to visualize
+   * @return		the panel with the visualization
+   */
+  @Override
+  public JPanel generate(ConfusionMatrix matrix) {
+    JPanel	result;
+    
+    m_Matrix = matrix;
+    result   = new JPanel(new BorderLayout());
+    result.add(createScrollPane(generateHeatmap()), BorderLayout.CENTER);
+    result.add(createScrollPane(generateOptions()), BorderLayout.EAST);
+    
+    return result;
   }
 }
