@@ -11,6 +11,8 @@ Available visualizations:
 
 * **heatmap** - counts in the matrix get represented using colors chosen from a gradient generated from two colors, can be saved as image file
 
+* **heatmap (scaled)** - same as **heatmap**, but divides the elements in a row by the sum of counts in that row (= percentages). Useful for skewed class distributions.
+
 
 How to use packages
 -------------------
@@ -29,7 +31,7 @@ Add the following dependency in your `pom.xml` to include the package:
     <dependency>
       <groupId>com.github.fracpete</groupId>
       <artifactId>confusionmatrix-weka-package</artifactId>
-      <version>2014.8.6</version>
+      <version>2014.10.15</version>
       <type>jar</type>
       <exclusions>
         <exclusion>
