@@ -1,6 +1,18 @@
 How to make a release
 =====================
 
+Preparation
+-----------
+
+* Change the artifact ID to today''s date, e.g.:
+
+  <pre>
+  2014.10.15-SNAPSHOT
+  </pre>
+
+* Commit/push all changes
+
+
 Weka package
 ------------
 
@@ -23,3 +35,10 @@ Maven Central
   <pre>
   mvn release:clean release:prepare release:perform
   </pre>
+
+* After successful deployment, push the changes out:
+
+  <pre>
+  git push
+  </pre>
+
