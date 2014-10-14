@@ -33,7 +33,7 @@ import weka.core.Utils;
  * @version $Revision$
  */
 public class ConfusionMatrix
-  implements Serializable {
+  implements Serializable, Cloneable {
 
   /** for serialization. */
   private static final long serialVersionUID = -2212913330894559303L;
@@ -78,6 +78,16 @@ public class ConfusionMatrix
     m_Matrix = new double[m_ClassAttribute.numValues()][m_ClassAttribute.numValues()];
     for (Prediction pred: m_Predictions)
       m_Matrix[(int) pred.actual()][(int) pred.predicted()] += pred.weight();
+  }
+  
+  /**
+   * Returns a clone of ifself.
+   * 
+   * @return		the clone
+   */
+  @Override
+  public ConfusionMatrix clone() {
+    return new ConfusionMatrix(m_Predictions, m_ClassAttribute);
   }
   
   /**
@@ -230,5 +240,25 @@ public class ConfusionMatrix
     }
     
     return result;
+  }
+  
+  /**
+   * Scales the rows to 0-1, with 1 being the number of instances with that 
+   * class label. Useful for skewed class distributions.
+   */
+  public void scaleRows() {
+    int		i;
+    int		n;
+    double	sum;
+    
+    for (i = 0; i < getNumClasses(); i++) {
+      sum = 0;
+      for (n = 0; n < getNumClasses(); n++)
+	sum += m_Matrix[i][n];
+      if (sum > 0) {
+	for (n = 0; n < getNumClasses(); n++)
+	  m_Matrix[i][n] /= sum;
+      }
+    }
   }
 }

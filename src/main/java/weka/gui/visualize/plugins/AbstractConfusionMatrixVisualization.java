@@ -36,6 +36,7 @@ import javax.swing.JScrollPane;
 
 import weka.classifiers.evaluation.Prediction;
 import weka.core.Attribute;
+import weka.gui.ComponentHelper;
 
 /**
  * Ancestor for confusion matrix visualizations.
@@ -177,6 +178,7 @@ public abstract class AbstractConfusionMatrixVisualization
 	final JFrame jf = new JFrame(classAtt.name() + " - " + getMenuItemText());
 	jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	jf.setSize(getFrameDimension());
+	jf.setIconImage(ComponentHelper.getImage("weka/gui", "confusionmatrix_logo.png"));
 	jf.getContentPane().setLayout(new BorderLayout());
 	jf.getContentPane().add(generate(matrix), BorderLayout.CENTER);
 	jf.setLocationRelativeTo(null);
