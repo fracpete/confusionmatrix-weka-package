@@ -1,6 +1,9 @@
 How to make a release
 =====================
 
+Weka package
+------------
+
 * Run the following command to generate the package archive for version `1.0.0`:
 
   <pre>
@@ -11,3 +14,12 @@ How to make a release
 * add release notes
 * upload package archive from `dist`
 
+
+Maven Central
+-------------
+
+* Run the following command to deploy the artifact:
+
+  <pre>
+  mvn release:clean release:prepare release:perform
+  </pre>
