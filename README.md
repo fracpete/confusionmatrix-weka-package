@@ -14,6 +14,14 @@ Available visualizations:
 * **heatmap (scaled)** - same as **heatmap**, but divides the elements in a row by the sum of counts in that row (= percentages). Useful for skewed class distributions.
 
 
+Releases
+--------
+
+* [2014.10.15](https://github.com/fracpete/confusionmatrix-weka-package/releases/download/v2014.10.15/confusionmatrix-2014.10.15.zip)
+* [2014.8.6](https://github.com/fracpete/confusionmatrix-weka-package/releases/download/v2014.8.6/confusionmatrix-2014.8.6.zip)
+* [2014.8.5](https://github.com/fracpete/confusionmatrix-weka-package/releases/download/v2014.8.5/confusionmatrix-2014.8.5.zip)
+
+
 How to use packages
 -------------------
 
